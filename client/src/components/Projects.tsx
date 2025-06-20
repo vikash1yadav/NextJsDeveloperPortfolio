@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PROJECTS } from '@/lib/constants';
 import { ExternalLink, Github, ArrowRight } from 'lucide-react';
+import { Link } from 'wouter';
 
 const categories = [
   { id: 'all', label: 'All Projects' },
@@ -107,9 +108,11 @@ export default function Projects() {
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <button className="text-blue-500 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                    View Details <ArrowRight className="ml-1 w-4 h-4" />
-                  </button>
+                  <Link href={`/project/${project.id}`}>
+                    <button className="text-blue-500 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
+                      View Details <ArrowRight className="ml-1 w-4 h-4" />
+                    </button>
+                  </Link>
                   <div className="flex space-x-3">
                     <a 
                       href={project.demoUrl} 
