@@ -4,12 +4,17 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from './ThemeProvider';
 import { useSmoothScroll } from '@/hooks/use-smooth-scroll';
 import { Sun, Moon, Menu } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
 
 const navItems = [
   { name: 'Home', href: 'home' },
   { name: 'Projects', href: 'projects' },
   { name: 'Tech Stack', href: 'tech-stack' },
   { name: 'Contact', href: 'contact' },
+];
+
+const routeItems = [
+  { name: 'Blog', href: '/blog' },
 ];
 
 export default function Navigation() {
@@ -69,6 +74,15 @@ export default function Navigation() {
               >
                 {item.name}
               </button>
+            ))}
+            {routeItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-slate-600 dark:text-slate-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200"
+              >
+                {item.name}
+              </Link>
             ))}
           </div>
 

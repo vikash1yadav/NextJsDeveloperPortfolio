@@ -1,6 +1,6 @@
-import { users, type User, type InsertUser, contacts, type Contact, type InsertContact, projects, type Project, type InsertProject, techStack, type TechStack, type InsertTechStack } from "@shared/schema";
+import { users, type User, type InsertUser, contacts, type Contact, type InsertContact, projects, type Project, type InsertProject, techStack, type TechStack, type InsertTechStack, blogPosts, type BlogPost, type InsertBlogPost } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -13,6 +13,12 @@ export interface IStorage {
   createProject(project: InsertProject): Promise<Project>;
   getTechStack(): Promise<TechStack[]>;
   createTechStack(tech: InsertTechStack): Promise<TechStack>;
+  getBlogPosts(): Promise<BlogPost[]>;
+  getBlogPost(id: number): Promise<BlogPost | undefined>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost>;
+  deleteBlogPost(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -73,6 +79,41 @@ export class DatabaseStorage implements IStorage {
       .values(insertTechStack)
       .returning();
     return tech;
+  }
+
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts).where(eq(blogPosts.isPublished, 1)).orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
+    return post || undefined;
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
+    return post || undefined;
+  }
+
+  async createBlogPost(insertBlogPost: InsertBlogPost): Promise<BlogPost> {
+    const [post] = await db
+      .insert(blogPosts)
+      .values(insertBlogPost)
+      .returning();
+    return post;
+  }
+
+  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const [post] = await db
+      .update(blogPosts)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(blogPosts.id, id))
+      .returning();
+    return post;
+  }
+
+  async deleteBlogPost(id: number): Promise<void> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
   }
 }
 

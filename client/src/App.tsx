@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Home from "@/pages/Home";
 import ProjectDetail from "@/pages/ProjectDetail";
+import Blog from "@/pages/Blog";
+import BlogPost from "@/pages/BlogPost";
+import BlogForm from "@/pages/BlogForm";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -13,6 +16,10 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/project/:id" component={ProjectDetail} />
+      <Route path="/blog" component={Blog} />
+      <Route path="/blog/new" component={BlogForm} />
+      <Route path="/blog/edit/:id" component={BlogForm} />
+      <Route path="/blog/:id" component={BlogPost} />
       <Route component={NotFound} />
     </Switch>
   );

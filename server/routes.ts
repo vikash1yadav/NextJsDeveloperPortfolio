@@ -131,6 +131,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Blog endpoints
+  app.get("/api/blog", async (req, res) => {
+    try {
+      const posts = await storage.getBlogPosts();
+      res.json(posts);
+    } catch (error) {
+      console.error("Get blog posts error:", error);
+      res.status(500).json({ message: "Failed to retrieve blog posts" });
+    }
+  });
+
+  app.get("/api/blog/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid blog post ID" });
+      }
+      
+      const post = await storage.getBlogPost(id);
+      if (!post) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      res.json(post);
+    } catch (error) {
+      console.error("Get blog post error:", error);
+      res.status(500).json({ message: "Failed to retrieve blog post" });
+    }
+  });
+
+  app.post("/api/blog", async (req, res) => {
+    try {
+      const { insertBlogPostSchema } = await import("@shared/schema");
+      const validatedData = insertBlogPostSchema.parse(req.body);
+      
+      const post = await storage.createBlogPost(validatedData);
+      res.status(201).json({
+        message: "Blog post created successfully",
+        post: {
+          id: post.id,
+          title: post.title,
+          slug: post.slug
+        }
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Create blog post error:", error);
+      res.status(500).json({ 
+        message: "Something went wrong. Please try again later." 
+      });
+    }
+  });
+
+  app.put("/api/blog/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid blog post ID" });
+      }
+
+      const { insertBlogPostSchema } = await import("@shared/schema");
+      const validatedData = insertBlogPostSchema.partial().parse(req.body);
+      
+      const post = await storage.updateBlogPost(id, validatedData);
+      res.json({
+        message: "Blog post updated successfully",
+        post: {
+          id: post.id,
+          title: post.title,
+          slug: post.slug
+        }
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Update blog post error:", error);
+      res.status(500).json({ 
+        message: "Something went wrong. Please try again later." 
+      });
+    }
+  });
+
+  app.delete("/api/blog/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid blog post ID" });
+      }
+      
+      await storage.deleteBlogPost(id);
+      res.json({ message: "Blog post deleted successfully" });
+    } catch (error) {
+      console.error("Delete blog post error:", error);
+      res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

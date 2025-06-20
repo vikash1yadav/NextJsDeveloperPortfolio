@@ -75,3 +75,27 @@ export const insertTechStackSchema = createInsertSchema(techStack).omit({
 
 export type InsertTechStack = z.infer<typeof insertTechStackSchema>;
 export type TechStack = typeof techStack.$inferSelect;
+
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").unique().notNull(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt").notNull(),
+  featuredImage: text("featured_image"),
+  tags: json("tags").$type<string[]>().notNull().default([]),
+  category: text("category").notNull(),
+  isPublished: integer("is_published").default(1).notNull(),
+  publishedAt: timestamp("published_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type BlogPost = typeof blogPosts.$inferSelect;
