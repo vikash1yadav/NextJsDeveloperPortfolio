@@ -17,8 +17,8 @@ This is a modern, responsive personal portfolio website built with React, TypeSc
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js
-- **Database**: PostgreSQL with Drizzle ORM
-- **Database Provider**: Neon Database (serverless PostgreSQL)
+- **Database**: PostgreSQL with Drizzle ORM (Database integrated and active)
+- **Database Provider**: PostgreSQL 16 module in Replit environment
 - **Session Management**: connect-pg-simple for PostgreSQL session storage
 - **Development**: Hot Module Replacement (HMR) via Vite middleware
 
@@ -102,6 +102,8 @@ This is a modern, responsive personal portfolio website built with React, TypeSc
 ```
 Changelog:
 - June 20, 2025. Initial setup
+- June 20, 2025. Added project detail pages with dynamic routing
+- June 20, 2025. Integrated PostgreSQL database, migrated from in-memory storage
 ```
 
 ## User Preferences
