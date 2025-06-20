@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PROJECTS } from '@/lib/constants';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ExternalLink, Github, ArrowRight } from 'lucide-react';
 import { Link } from 'wouter';
+import type { Project } from '@shared/schema';
 
 const categories = [
   { id: 'all', label: 'All Projects' },
@@ -16,9 +18,18 @@ const categories = [
 export default function Projects() {
   const [activeFilter, setActiveFilter] = useState('all');
 
+  const { data: projects = [], isLoading } = useQuery<Project[]>({
+    queryKey: ['/api/projects'],
+    queryFn: async () => {
+      const response = await fetch('/api/projects');
+      if (!response.ok) throw new Error('Failed to fetch projects');
+      return response.json();
+    },
+  });
+
   const filteredProjects = activeFilter === 'all' 
-    ? PROJECTS 
-    : PROJECTS.filter(project => project.category === activeFilter);
+    ? projects 
+    : projects.filter(project => project.category === activeFilter);
 
   return (
     <section id="projects" className="py-20 bg-white dark:bg-slate-800">
@@ -48,89 +59,114 @@ export default function Projects() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project) => (
-            <Card 
-              key={project.id} 
-              className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 group overflow-hidden"
-            >
-              <div className="relative overflow-hidden">
-                <img 
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="flex space-x-2">
-                    <a 
-                      href={project.demoUrl} 
-                      className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-600 hover:text-blue-500 transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                    <a 
-                      href={project.githubUrl} 
-                      className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-600 hover:text-blue-500 transition-colors"
-                    >
-                      <Github className="w-4 h-4" />
-                    </a>
+          {isLoading ? (
+            [...Array(6)].map((_, i) => (
+              <Card key={i} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden">
+                <Skeleton className="w-full h-48" />
+                <CardContent className="p-6">
+                  <Skeleton className="h-6 w-3/4 mb-3" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-2/3 mb-4" />
+                  <div className="flex gap-2 mb-4">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-14" />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="h-4 w-24" />
+                    <div className="flex space-x-3">
+                      <Skeleton className="h-4 w-4" />
+                      <Skeleton className="h-4 w-4" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            filteredProjects.map((project) => (
+              <Card 
+                key={project.id} 
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 group overflow-hidden"
+              >
+                <div className="relative overflow-hidden">
+                  <img 
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="flex space-x-2">
+                      <a 
+                        href={project.demoUrl} 
+                        className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-600 hover:text-blue-500 transition-colors"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                      <a 
+                        href={project.githubUrl} 
+                        className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-600 hover:text-blue-500 transition-colors"
+                      >
+                        <Github className="w-4 h-4" />
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-xl font-bold group-hover:text-blue-500 transition-colors duration-200">
-                    {project.title}
-                  </h3>
-                  <div className="flex space-x-1">
-                    {project.primaryTags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
+                
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-xl font-bold group-hover:text-blue-500 transition-colors duration-200">
+                      {project.title}
+                    </h3>
+                    <div className="flex space-x-1">
+                      {project.primaryTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+                    {project.description}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {project.tags.map((tag) => (
+                      <span 
+                        key={tag}
+                        className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-full"
+                      >
                         {tag}
-                      </Badge>
+                      </span>
                     ))}
                   </div>
-                </div>
-                
-                <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
-                  {project.description}
-                </p>
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.tags.map((tag) => (
-                    <span 
-                      key={tag}
-                      className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <Link href={`/project/${project.id}`}>
-                    <button className="text-blue-500 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
-                      View Details <ArrowRight className="ml-1 w-4 h-4" />
-                    </button>
-                  </Link>
-                  <div className="flex space-x-3">
-                    <a 
-                      href={project.demoUrl} 
-                      className="text-slate-400 hover:text-blue-500 transition-colors duration-200"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                    <a 
-                      href={project.githubUrl} 
-                      className="text-slate-400 hover:text-blue-500 transition-colors duration-200"
-                    >
-                      <Github className="w-4 h-4" />
-                    </a>
+                  
+                  <div className="flex justify-between items-center">
+                    <Link href={`/project/${project.id}`}>
+                      <button className="text-blue-500 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center">
+                        View Details <ArrowRight className="ml-1 w-4 h-4" />
+                      </button>
+                    </Link>
+                    <div className="flex space-x-3">
+                      <a 
+                        href={project.demoUrl} 
+                        className="text-slate-400 hover:text-blue-500 transition-colors duration-200"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                      <a 
+                        href={project.githubUrl} 
+                        className="text-slate-400 hover:text-blue-500 transition-colors duration-200"
+                      >
+                        <Github className="w-4 h-4" />
+                      </a>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         <div className="text-center mt-12">
