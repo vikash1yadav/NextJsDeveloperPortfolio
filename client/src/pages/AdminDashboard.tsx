@@ -31,7 +31,7 @@ import type { Project, TechStack } from '@shared/schema';
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
-  const { admin, isAuthenticated, logout } = useAdminAuth();
+  const { admin, isAuthenticated, isLoading, logout } = useAdminAuth();
   const adminRequest = useAdminRequest();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -44,10 +44,10 @@ export default function AdminDashboard() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       setLocation('/admin/login');
     }
-  }, [isAuthenticated, setLocation]);
+  }, [isAuthenticated, isLoading, setLocation]);
 
   const { data: projects, isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
@@ -127,6 +127,18 @@ export default function AdminDashboard() {
       deleteTechMutation.mutate(deleteDialog.id);
     }
   };
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-300">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;
