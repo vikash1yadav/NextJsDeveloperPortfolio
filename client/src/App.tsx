@@ -9,6 +9,10 @@ import ProjectDetail from "@/pages/ProjectDetail";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import BlogForm from "@/pages/BlogForm";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminDashboard from "@/pages/AdminDashboard";
+import ProjectForm from "@/pages/ProjectForm";
+import TechForm from "@/pages/TechForm";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +24,12 @@ function Router() {
       <Route path="/blog/new" component={BlogForm} />
       <Route path="/blog/edit/:id" component={BlogForm} />
       <Route path="/blog/:id" component={BlogPost} />
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/projects/new" component={ProjectForm} />
+      <Route path="/admin/projects/edit/:id" component={ProjectForm} />
+      <Route path="/admin/tech-stack/new" component={TechForm} />
+      <Route path="/admin/tech-stack/edit/:id" component={TechForm} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -239,6 +239,250 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin authentication middleware
+  const requireAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const sessionId = req.headers.authorization?.replace('Bearer ', '');
+      if (!sessionId) {
+        return res.status(401).json({ message: "No session token provided" });
+      }
+
+      const session = await storage.getAdminSession(sessionId);
+      if (!session) {
+        return res.status(401).json({ message: "Invalid or expired session" });
+      }
+
+      req.admin = session.admin;
+      next();
+    } catch (error) {
+      console.error("Admin auth error:", error);
+      res.status(500).json({ message: "Authentication error" });
+    }
+  };
+
+  // Admin login
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password required" });
+      }
+
+      const admin = await storage.verifyAdminPassword(username, password);
+      if (!admin) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const session = await storage.createAdminSession(admin.id);
+      res.json({
+        message: "Login successful",
+        sessionToken: session.id,
+        admin: {
+          id: admin.id,
+          username: admin.username,
+          email: admin.email
+        }
+      });
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Admin logout
+  app.post("/api/admin/logout", requireAdmin, async (req, res) => {
+    try {
+      const sessionId = req.headers.authorization?.replace('Bearer ', '');
+      if (sessionId) {
+        await storage.deleteAdminSession(sessionId);
+      }
+      res.json({ message: "Logout successful" });
+    } catch (error) {
+      console.error("Admin logout error:", error);
+      res.status(500).json({ message: "Logout failed" });
+    }
+  });
+
+  // Admin verify session
+  app.get("/api/admin/me", requireAdmin, async (req, res) => {
+    res.json({
+      admin: {
+        id: req.admin.id,
+        username: req.admin.username,
+        email: req.admin.email
+      }
+    });
+  });
+
+  // Admin project management
+  app.put("/api/admin/projects/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+
+      const { insertProjectSchema } = await import("@shared/schema");
+      const validatedData = insertProjectSchema.partial().parse(req.body);
+      
+      const project = await storage.updateProject(id, validatedData);
+      res.json({
+        message: "Project updated successfully",
+        project: {
+          id: project.id,
+          title: project.title
+        }
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Update project error:", error);
+      res.status(500).json({ message: "Failed to update project" });
+    }
+  });
+
+  app.delete("/api/admin/projects/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+      
+      await storage.deleteProject(id);
+      res.json({ message: "Project deleted successfully" });
+    } catch (error) {
+      console.error("Delete project error:", error);
+      res.status(500).json({ message: "Failed to delete project" });
+    }
+  });
+
+  app.post("/api/admin/projects", requireAdmin, async (req, res) => {
+    try {
+      const { insertProjectSchema } = await import("@shared/schema");
+      const validatedData = insertProjectSchema.parse(req.body);
+      
+      const project = await storage.createProject(validatedData);
+      res.status(201).json({
+        message: "Project created successfully",
+        project: {
+          id: project.id,
+          title: project.title
+        }
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Create project error:", error);
+      res.status(500).json({ message: "Failed to create project" });
+    }
+  });
+
+  // Admin tech stack management
+  app.put("/api/admin/tech-stack/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid tech stack ID" });
+      }
+
+      const { insertTechStackSchema } = await import("@shared/schema");
+      const validatedData = insertTechStackSchema.partial().parse(req.body);
+      
+      const tech = await storage.updateTechStack(id, validatedData);
+      res.json({
+        message: "Tech stack updated successfully",
+        tech: {
+          id: tech.id,
+          name: tech.name
+        }
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Update tech stack error:", error);
+      res.status(500).json({ message: "Failed to update tech stack" });
+    }
+  });
+
+  app.delete("/api/admin/tech-stack/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid tech stack ID" });
+      }
+      
+      await storage.deleteTechStack(id);
+      res.json({ message: "Tech stack deleted successfully" });
+    } catch (error) {
+      console.error("Delete tech stack error:", error);
+      res.status(500).json({ message: "Failed to delete tech stack" });
+    }
+  });
+
+  app.post("/api/admin/tech-stack", requireAdmin, async (req, res) => {
+    try {
+      const { insertTechStackSchema } = await import("@shared/schema");
+      const validatedData = insertTechStackSchema.parse(req.body);
+      
+      const tech = await storage.createTechStack(validatedData);
+      res.status(201).json({
+        message: "Tech stack created successfully",
+        tech: {
+          id: tech.id,
+          name: tech.name
+        }
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Create tech stack error:", error);
+      res.status(500).json({ message: "Failed to create tech stack" });
+    }
+  });
+
+  // Create default admin user for demo
+  app.post("/api/admin/create-default", async (req, res) => {
+    try {
+      const existingAdmin = await storage.getAdminByUsername("admin");
+      if (existingAdmin) {
+        return res.json({ message: "Default admin already exists" });
+      }
+
+      await storage.createAdmin({
+        username: "admin",
+        password: "password",
+        email: "admin@example.com",
+        isActive: 1
+      });
+
+      res.json({ message: "Default admin created successfully" });
+    } catch (error) {
+      console.error("Create default admin error:", error);
+      res.status(500).json({ message: "Failed to create default admin" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

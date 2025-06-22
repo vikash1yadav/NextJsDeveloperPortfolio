@@ -63,7 +63,7 @@ export default function TechStack() {
                   <div className="space-y-4">
                     {technologies.map((tech) => (
                       <Card 
-                        key={tech.name}
+                        key={tech.id}
                         className="tech-item bg-white dark:bg-slate-800 shadow-sm hover:shadow-lg transition-all duration-200 hover:scale-105"
                       >
                         <CardContent className="flex items-center p-4">
