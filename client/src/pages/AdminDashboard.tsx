@@ -1,9 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { 
   Settings, 
   LogOut, 
@@ -25,6 +35,12 @@ export default function AdminDashboard() {
   const adminRequest = useAdminRequest();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    type: 'project' | 'tech';
+    id: number;
+    name: string;
+  }>({ open: false, type: 'project', id: 0, name: '' });
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -56,6 +72,7 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setDeleteDialog({ open: false, type: 'project', id: 0, name: '' });
       toast({
         title: "Success!",
         description: "Project deleted successfully.",
@@ -83,6 +100,7 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tech-stack'] });
+      setDeleteDialog({ open: false, type: 'tech', id: 0, name: '' });
       toast({
         title: "Success!",
         description: "Technology deleted successfully.",
@@ -100,6 +118,14 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     logout();
     setLocation('/admin/login');
+  };
+
+  const confirmDelete = () => {
+    if (deleteDialog.type === 'project') {
+      deleteProjectMutation.mutate(deleteDialog.id);
+    } else {
+      deleteTechMutation.mutate(deleteDialog.id);
+    }
   };
 
   if (!isAuthenticated) {
@@ -240,7 +266,12 @@ export default function AdminDashboard() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => deleteProjectMutation.mutate(project.id)}
+                          onClick={() => setDeleteDialog({
+                            open: true,
+                            type: 'project',
+                            id: project.id,
+                            name: project.title
+                          })}
                           disabled={deleteProjectMutation.isPending}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
@@ -318,7 +349,12 @@ export default function AdminDashboard() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => deleteTechMutation.mutate(tech.id)}
+                          onClick={() => setDeleteDialog({
+                            open: true,
+                            type: 'tech',
+                            id: tech.id,
+                            name: tech.name
+                          })}
                           disabled={deleteTechMutation.isPending}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
@@ -374,6 +410,35 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => 
+        setDeleteDialog({ ...deleteDialog, open })
+      }>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {deleteDialog.type === 'project' ? 'Project' : 'Technology'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteDialog.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteProjectMutation.isPending || deleteTechMutation.isPending}
+            >
+              {deleteProjectMutation.isPending || deleteTechMutation.isPending 
+                ? 'Deleting...' 
+                : 'Delete'
+              }
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

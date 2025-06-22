@@ -42,12 +42,19 @@ This is a modern, responsive personal portfolio website built with React, TypeSc
 ### Backend Components
 - **Express Server**: RESTful API with middleware for logging and error handling
 - **Database Layer**: Drizzle ORM with PostgreSQL for data persistence
-- **Storage Interface**: Abstracted storage layer with in-memory fallback
+- **Storage Interface**: Abstracted storage layer for all CRUD operations
 - **Contact API**: Form submission endpoint with validation and error handling
+- **Blog API**: Complete CRUD operations for blog posts with validation
+- **Admin API**: Authentication system with session management and protected routes
 
 ### Database Schema
 - **Contacts Table**: Stores contact form submissions (name, email, subject, message, timestamp)
 - **Users Table**: Basic user authentication structure (username, password)
+- **Projects Table**: Featured projects with images, descriptions, technologies, and categories
+- **Tech Stack Table**: Technology skills with icons, categories, and background colors
+- **Blog Posts Table**: Blog content with titles, slugs, content, excerpts, and publishing status
+- **Admins Table**: Admin users with hashed passwords for authentication
+- **Admin Sessions Table**: Session management for admin authentication
 - **Validation**: Zod schemas for runtime type checking and API validation
 
 ## Data Flow
@@ -104,6 +111,10 @@ Changelog:
 - June 20, 2025. Initial setup
 - June 20, 2025. Added project detail pages with dynamic routing
 - June 20, 2025. Integrated PostgreSQL database, migrated from in-memory storage
+- June 22, 2025. Added complete blog system with CRUD functionality
+- June 22, 2025. Implemented admin authentication system with protected routes
+- June 22, 2025. Added admin dashboard for managing Featured Projects and Technology Stack
+- June 22, 2025. Added confirmation dialogs for delete operations in admin panel
 ```
 
 ## User Preferences
