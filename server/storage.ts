@@ -2,6 +2,7 @@ import { users, type User, type InsertUser, contacts, type Contact, type InsertC
 import { db } from "./db";
 import { eq, desc, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import crypto from "crypto"
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -131,6 +132,8 @@ export class DatabaseStorage implements IStorage {
   // Admin operations
   async createAdmin(insertAdmin: InsertAdmin): Promise<Admin> {
     const hashedPassword = await bcrypt.hash(insertAdmin.password, 10);
+    // console.log("hhh", hashedPassword);
+    
     const [admin] = await db
       .insert(admins)
       .values({

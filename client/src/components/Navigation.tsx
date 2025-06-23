@@ -60,7 +60,7 @@ export default function Navigation() {
             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-violet-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
               AC
             </div>
-            <span className="ml-3 text-xl font-bold">Alex Chen</span>
+            <span className="ml-3 text-xl font-bold">Vikas Kumar</span>
           </div>
           
           <div className="hidden md:flex items-center space-x-8">

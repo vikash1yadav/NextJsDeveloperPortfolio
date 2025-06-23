@@ -19,7 +19,7 @@ export default function Footer() {
             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-violet-500 rounded-lg flex items-center justify-center text-white font-bold text-lg mr-3">
               AC
             </div>
-            <span className="text-xl font-bold text-white">Alex Chen</span>
+            <span className="text-xl font-bold text-white">Vikas Kumar</span>
           </div>
           
           <div className="flex items-center space-x-6 mb-4 md:mb-0">
@@ -36,7 +36,7 @@ export default function Footer() {
           
           <div className="text-center md:text-right">
             <div className="text-sm">
-              © 2024 Alex Chen. All rights reserved.
+              © 2024 Vikas Kumar. All rights reserved.
             </div>
             <div className="text-xs mt-1 text-slate-400">
               Built with Next.js & ❤️

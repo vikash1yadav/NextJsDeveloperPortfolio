@@ -70,10 +70,7 @@ export default function BlogForm() {
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertBlogPost) => {
-      return apiRequest('/api/blog', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('POST','/api/blog', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/blog'] });
